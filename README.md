@@ -101,13 +101,16 @@ From `memory/personality.json`:
 
 ---
 
-## 🎬 Demo (optional)
+## 🎬 Demo
 
-If you want to submit this to OpenAI, a short video could show:
+📹 [Watch the demo video](https://youtube.com/shorts/EddEBAJpJE0?feature=share)
+
+This video shows:
 - You saying “rise up”
-- Skuggi transcribing and replying
-- Memory file updating after
-- “be gone” to pause
+- Skuggi transcribing and replying in real time
+- Memory file updating live
+- “be gone” used to pause listening
+
 
 ---
 
