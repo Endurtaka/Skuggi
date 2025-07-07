@@ -1,0 +1,7 @@
+openai
+whisper
+edge-tts
+sounddevice
+numpy
+scipy
+python-dotenv
