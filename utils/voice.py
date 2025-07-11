@@ -7,16 +7,22 @@ import sounddevice as sd
 from scipy.io.wavfile import write as wav_write
 from edge_tts import Communicate
 import whisper
+from PIL import Image
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 from utils.gpt import get_response
 from utils.memory import load_memory, save_memory
 
-print("\033[92m✔ FULL VOICE.PY LOADED - CLEANUP PATCH ACTIVE\033[0m")
+print("\033[92m✔ FULL VOICE.PY LOADED - VISION TRIGGER ACTIVE\033[0m")
 
 SAMPLE_RATE = 16000
 CHUNK_SIZE = 1024
 whisper_model = whisper.load_model("base")
 memory = load_memory()
 chat_history = []
+
+IMAGE_DIR = "image_drop"
+os.makedirs(IMAGE_DIR, exist_ok=True)
 
 async def speak(text):
     print(f"\U0001F5E3 Skuggi says: {text}")
@@ -40,8 +46,6 @@ async def speak(text):
         os.remove("demon_output.wav")
     except Exception as e:
         print(f"Cleanup error: {e}")
-    except Exception as e:
-        print("Failed to delete temp files:", e)
 
 def record_until_silence(threshold):
     buffer = []
@@ -86,7 +90,7 @@ def transcribe_audio(filename):
         return ""
 
 def get_ambient_level():
-    duration = 1  # seconds
+    duration = 1
     recording = []
 
     def callback(indata, frames, time_info, status):
@@ -98,7 +102,49 @@ def get_ambient_level():
     if recording:
         audio = np.concatenate(recording, axis=0)
         return np.linalg.norm(audio)
-    return 500  # fallback default
+    return 500
+
+def extract_text_from_image(image_path):
+    try:
+        img = Image.open(image_path)
+        text = pytesseract.image_to_string(img, lang="isl+eng").strip()
+        if len(text) < 10:
+            return ""
+        return text
+    except Exception as e:
+        print(f"❌ Failed to process {image_path}: {e}")
+        return ""
+
+async def image_vision_trigger():
+    images = [f for f in os.listdir(IMAGE_DIR) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+    if not images:
+        await speak("I see nothing. The folder is empty.")
+        return
+
+    latest = sorted(images)[-1]
+    full_path = os.path.join(IMAGE_DIR, latest)
+    print(f"🖼️ Looking at: {latest}")
+
+    text = extract_text_from_image(full_path)
+    if not text:
+        await speak("There's nothing I can read from that.")
+    else:
+        memory[f"Seen: {latest}"] = text
+        chat_history.append({"role": "user", "content": text})
+        reply = await get_response(f"From image: {text}", chat_history, memory)
+
+        if any(phrase in reply.lower() for phrase in [
+            "this article covers various topics",
+            "concise summary",
+            "as you can see",
+            "summarizing"
+        ]):
+            reply = "This image contains mostly structural or repetitive content. Nothing important was found."
+
+        chat_history.append({"role": "assistant", "content": reply})
+        await speak(reply)
+
+    save_memory(memory)
 
 async def local_loop():
     listening = True
@@ -125,6 +171,10 @@ async def local_loop():
             print('🔊 Skuggi is listening again.')
             continue
 
+        if 'look at this' in lower:
+            await image_vision_trigger()
+            continue
+
         if not listening:
             print('🤫 (Skuggi is on hold...)')
             continue
@@ -137,49 +187,5 @@ async def local_loop():
         await speak(reply)
         save_memory(memory)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        save_memory(memory)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    asyncio.run(local_loop())
