@@ -49,6 +49,16 @@ skuggi/
 └── README.md
 ```
 
+## 🎬 Demo
+
+📹 [Watch the demo video on YouTube](https://youtube.com/shorts/EddEBAJpJE0?si=TJXQeWg7pvhTn-kM)
+
+This video shows:
+- You saying “rise up”
+- Skuggi transcribing and replying in real time
+- Memory file updating live
+- “be gone” used to pause listening
+
 ---
 
 ## 🧠 Memory System
