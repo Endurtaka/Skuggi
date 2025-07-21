@@ -49,6 +49,8 @@ skuggi/
 └── README.md
 ```
 
+---
+
 ## 🎬 Demo
 
 📹 [Watch the demo video on YouTube](https://youtube.com/shorts/EddEBAJpJE0?si=TJXQeWg7pvhTn-kM)
